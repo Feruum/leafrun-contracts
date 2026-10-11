@@ -1,30 +1,13 @@
 # leafrun-contracts
 
-Planned versioned API, WebSocket and event contracts with generated SDKs.
+## Agree on the shape of messages
 
-**Status: planned component.** This repository currently contains its scope and roadmap links. It does not yet provide a runnable service or package. The existing local rendering prototype lives in [leafrun-generation](https://github.com/leafrun/leafrun-generation).
+This planned repository will define versioned API requests, WebSocket messages, and events shared between Leafrun components. For example, a render request and its result should mean the same thing to a browser and a server worker.
 
-## Responsibility
+Services own their behavior; contracts describe what crosses their boundaries. Generated client code can later live here too.
 
-Versioned HTTP/WS/event/internal contracts and generated SDKs; no domain DB models.
+**Status:** this repository is a planned component. It has no runnable implementation yet. The working local renderer is in [leafrun-generation](https://github.com/leafrun/leafrun-generation).
 
-## Boundaries
+**First roadmap step:** [LEA-18 — Define artifact IDs and API shapes](https://linear.app/bulnik/issue/LEA-18/e03-s3-rezultaty-i-ochistka). Linear may require workspace access; the public [roadmap](https://github.com/leafrun/leafrun/blob/main/docs/roadmap.md) explains the build order. See the [repository map](https://github.com/leafrun/leafrun/blob/main/docs/repositories.md) and [contribution guide](https://github.com/leafrun/leafrun/blob/main/CONTRIBUTING.md).
 
-This is a versioned library, not a separately deployed service. Consumers pin compatible versions; domain rules and database ownership remain with their owning services.
-
-## Roadmap
-
-- [LEA-18 — S3 artifacts and garbage collection](https://linear.app/bulnik/issue/LEA-18/e03-s3-rezultaty-i-ochistka)
-- [LEA-25 — Reliable asynchronous server rendering](https://linear.app/bulnik/issue/LEA-25/e04-nadyozhnyj-asinhronnyj-servernyj-render)
-- [LEA-100 — User agents and helpers](https://linear.app/bulnik/issue/LEA-100/e13-polzovatelskie-agenty-i-helpery)
-- [LEA-122 — Future capabilities: discovery](https://linear.app/bulnik/issue/LEA-122/e16-dalnejshie-vozmozhnosti-issledovanie)
-
-See the [development roadmap](https://github.com/leafrun/leafrun/blob/main/docs/roadmap.md) for dependencies and acceptance milestones. Creating this repository does not complete its implementation issues.
-
-## Contributing
-
-Use English for code comments, documentation, examples, commit messages and pull requests. See the [contribution guide](https://github.com/leafrun/leafrun/blob/main/CONTRIBUTING.md) and [current architecture](https://github.com/leafrun/leafrun/blob/main/docs/architecture.md).
-
-## License status
-
-A project license has not been selected. No license is assigned by this repository scaffold.
+No project license has been selected yet.
