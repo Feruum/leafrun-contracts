@@ -3,6 +3,7 @@ package storagev1
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -63,4 +64,15 @@ func (c *Client) ReleasePin(ctx context.Context, id string) error {
 		return err
 	}
 	return response.Body.Close()
+}
+
+func (c *Client) ReleasePinBound(ctx context.Context, id string, input PinReleaseRequest) (PinReleaseReceipt, error) {
+	receipt, err := callJSON[PinReleaseReceipt](c, ctx, "POST", objectPath("pins", id)+"/release", input)
+	if err != nil {
+		return PinReleaseReceipt{}, err
+	}
+	if receipt.PinID != id || receipt.Binding != input || (receipt.State != PinReleaseReleased && receipt.State != PinReleaseAbsent) {
+		return PinReleaseReceipt{}, fmt.Errorf("unconfirmed pin release binding")
+	}
+	return receipt, nil
 }

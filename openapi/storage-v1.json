@@ -359,6 +359,58 @@
         ],
         "type": "object"
       },
+      "PinReleaseReceipt": {
+        "additionalProperties": false,
+        "properties": {
+          "binding": {
+            "$ref": "#/components/schemas/PinReleaseRequest"
+          },
+          "pinId": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "released",
+              "absent"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "pinId",
+          "binding",
+          "state"
+        ],
+        "type": "object"
+      },
+      "PinReleaseRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "holderDomain": {
+            "type": "string"
+          },
+          "holderId": {
+            "type": "string"
+          },
+          "objectId": {
+            "type": "string"
+          },
+          "retentionPolicy": {
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          }
+        },
+        "required": [
+          "scope",
+          "objectId",
+          "holderId",
+          "holderDomain",
+          "retentionPolicy"
+        ],
+        "type": "object"
+      },
       "Principal": {
         "properties": {
           "domain": {
@@ -1065,6 +1117,129 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Pin"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          }
+        },
+        "security": [
+          {
+            "serviceBearer": []
+          }
+        ]
+      }
+    },
+    "/internal/v1/pins/{pinId}/release": {
+      "post": {
+        "description": "Authorize the authenticated holder on the requested scope before checking the exact object/holder/policy binding. An absent or different binding returns absent without revealing another reference. A 404 is an authorization failure and never confirms absence.",
+        "operationId": "releasePinBound",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pinId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinReleaseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PinReleaseReceipt"
                 }
               }
             },

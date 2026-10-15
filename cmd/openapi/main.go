@@ -29,6 +29,9 @@ func (b *schemaBuilder) schema(t reflect.Type) any {
 		if t == reflect.TypeFor[v1.OwnerState]() {
 			s["enum"] = []string{"referenced", "absent", "unknown"}
 		}
+		if t == reflect.TypeFor[v1.PinReleaseState]() {
+			s["enum"] = []string{"released", "absent"}
+		}
 		return s
 	case reflect.Bool:
 		return map[string]any{"type": "boolean"}
@@ -58,6 +61,9 @@ func (b *schemaBuilder) schema(t reflect.Type) any {
 				}
 			}
 			b.schemas[name] = map[string]any{"type": "object", "properties": properties, "required": required}
+			if t == reflect.TypeFor[v1.PinReleaseRequest]() || t == reflect.TypeFor[v1.PinReleaseReceipt]() {
+				b.schemas[name].(map[string]any)["additionalProperties"] = false
+			}
 		}
 		return map[string]any{"$ref": "#/components/schemas/" + name}
 	}
@@ -117,6 +123,8 @@ func main() {
 	add("get", "/internal/v1/pins/{pinId}", "getPin", nil, reflect.TypeFor[v1.Pin](), "200", false, false)
 	add("post", "/internal/v1/pins/{pinId}/activate", "activatePin", nil, reflect.TypeFor[v1.Pin](), "200", false, false)
 	add("delete", "/internal/v1/pins/{pinId}", "releasePin", nil, nil, "204", false, false)
+	add("post", "/internal/v1/pins/{pinId}/release", "releasePinBound", reflect.TypeFor[v1.PinReleaseRequest](), reflect.TypeFor[v1.PinReleaseReceipt](), "200", false, false)
+	paths["/internal/v1/pins/{pinId}/release"].(map[string]any)["post"].(map[string]any)["description"] = "Authorize the authenticated holder on the requested scope before checking the exact object/holder/policy binding. An absent or different binding returns absent without revealing another reference. A 404 is an authorization failure and never confirms absence."
 	add("get", "/v1/artifacts/{artifactId}", "getArtifact", nil, reflect.TypeFor[v1.Artifact](), "200", false, false)
 	add("get", "/v1/artifacts/{artifactId}/content", "artifactContent", nil, nil, "200", false, true)
 	for _, t := range []reflect.Type{reflect.TypeFor[v1.AccessCheck](), reflect.TypeFor[v1.AccessDecision](), reflect.TypeFor[v1.PublishabilityCheck](), reflect.TypeFor[v1.PublishabilityDecision](), reflect.TypeFor[v1.PinOwnerCheck](), reflect.TypeFor[v1.PinOwnerDecision]()} {

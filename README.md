@@ -30,6 +30,8 @@ The E03 server remains an internal dev service. Bearer credentials identify a se
 
 Pending pins precede the holder's durable pending reference. Activate only after that reference exists; ambiguous replies are resolved by reading the pin. Late activation cannot revive a deleting/expired object. Pin owner decisions distinguish `referenced`, `absent` and `unknown`.
 
+Cleanup uses `ReleasePinBound` with the exact scope, object, holder and retention policy. Storage checks the authenticated holder's current access before returning a matching `released` or `absent` receipt. A missing or different binding returns `absent` without exposing another reference; HTTP errors, including `404`, do not confirm cleanup. The client rejects mismatched receipts. The original DELETE endpoint remains available for existing callers.
+
 ## Development
 
 Use Go 1.27.0. Run `go test ./... -count=1`, `go vet ./...` and `go build ./...`; Linux additionally runs `go test -race ./... -count=1`. Tests cover M02 identity, malformed manifests, authenticated client errors/streams, and redirect refusal.

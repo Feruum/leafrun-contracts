@@ -147,6 +147,29 @@ type Pin struct {
 	CreatedAt       time.Time `json:"createdAt"`
 	ExpiresAt       time.Time `json:"expiresAt"`
 }
+
+// PinReleaseRequest names the caller's expected reference. A bound release
+// checks current permission on this scope before confirming its absence.
+type PinReleaseRequest struct {
+	Scope           Scope  `json:"scope"`
+	ObjectID        string `json:"objectId"`
+	HolderID        string `json:"holderId"`
+	HolderDomain    string `json:"holderDomain"`
+	RetentionPolicy string `json:"retentionPolicy"`
+}
+
+type PinReleaseState string
+
+const (
+	PinReleaseReleased PinReleaseState = "released"
+	PinReleaseAbsent   PinReleaseState = "absent"
+)
+
+type PinReleaseReceipt struct {
+	PinID   string            `json:"pinId"`
+	Binding PinReleaseRequest `json:"binding"`
+	State   PinReleaseState   `json:"state"`
+}
 type Principal struct {
 	Subject string `json:"subject"`
 	Domain  string `json:"domain"`
