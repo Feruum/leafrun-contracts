@@ -2,6 +2,7 @@ package jsonvalue
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -25,6 +26,37 @@ func TestStrictUnmarshalRejectsAliasesAndDuplicateUnicodeKeys(t *testing.T) {
 	}
 	if string(out.Payload) != `{"arbitrary":1.0}` {
 		t.Fatal("changed raw message")
+	}
+}
+
+func TestStrictDecodeBoundsWireBytesWithoutChangingCanonicalEncoding(t *testing.T) {
+	input := []byte(`{"description":"<>&` + "\u2028\u2029" + `","default":1.2300e+04}`)
+	limit := int64(len(input))
+	value, err := Decode(input, limit)
+	if err != nil {
+		t.Fatalf("valid JSON within wire byte cap rejected: %v", err)
+	}
+	if value.(map[string]any)["default"] != json.Number("1.2300e+04") {
+		t.Fatal("numeric lexeme changed")
+	}
+	var out struct {
+		Description string      `json:"description"`
+		Default     json.Number `json:"default"`
+	}
+	if err = Unmarshal(input, &out, limit); err != nil {
+		t.Fatalf("strict wire DTO rejected: %v", err)
+	}
+	if _, err = Decode(input, limit-1); err == nil {
+		t.Fatal("accepted bytes beyond wire cap")
+	}
+	canonical, err := Normalize(input)
+	want := `{"default":1.2300e+04,"description":"\u003c\u003e\u0026\u2028\u2029"}`
+	if err != nil || string(canonical) != want {
+		t.Fatalf("canonical identity changed: %s, %v", canonical, err)
+	}
+	large := []byte(`{"description":"` + strings.Repeat("<", MaxBytes/2) + `"}`)
+	if _, err = Normalize(large); err == nil {
+		t.Fatal("canonical normalization no longer enforces output byte cap")
 	}
 }
 func TestStrictDecodePreservesSchemaNumbersWithoutParameterBounds(t *testing.T) {

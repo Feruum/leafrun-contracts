@@ -21,7 +21,7 @@ func Decode(input []byte, maxBytes int64) (any, error) {
 		return nil, errors.New("JSON contains invalid UTF-8")
 	}
 	p := parser{input: input}
-	encoded, err := p.value(0)
+	_, err := p.value(0)
 	if err != nil {
 		return nil, err
 	}
@@ -29,9 +29,8 @@ func Decode(input []byte, maxBytes int64) (any, error) {
 	if p.pos != len(input) {
 		return nil, p.fail("trailing input")
 	}
-	if int64(len(encoded)) > maxBytes {
-		return nil, errors.New("decoded JSON exceeds limit")
-	}
+	// Decode bounds wire bytes. Canonical string escaping can expand otherwise
+	// valid input; only Normalize bounds that separate representation.
 	decoder := json.NewDecoder(bytes.NewReader(input))
 	decoder.UseNumber()
 	var value any
