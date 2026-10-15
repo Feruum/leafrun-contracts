@@ -1333,6 +1333,119 @@
         ]
       }
     },
+    "/internal/v1/resources/{resourceId}": {
+      "get": {
+        "description": "Current resource-read permission and committed ready lifecycle are checked. This point-in-time metadata response does not retain the resource; acquire a pin before committing its use.",
+        "operationId": "getResource",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "resourceId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Resource"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          }
+        },
+        "security": [
+          {
+            "serviceBearer": []
+          }
+        ]
+      }
+    },
     "/internal/v1/resources/{resourceId}/content": {
       "get": {
         "operationId": "resourceContent",

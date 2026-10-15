@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	InputLimit    int64 = 128 << 20
+	InputLimit    int64 = 160 << 20
 	OutputLimit   int64 = 160 << 20
 	SnapshotLimit int64 = 100 << 20
 	MetadataLimit int64 = 12 << 20
@@ -32,6 +32,8 @@ const (
 	PDFHeader
 	PDF
 	Terminal
+	InputFileHeader
+	InputFile
 )
 
 type Header struct {
@@ -42,19 +44,27 @@ type Header struct {
 
 func bound(kind Kind) int64 {
 	switch kind {
-	case Request, Terminal:
+	case Request:
+		return MetadataLimit
+	case Terminal:
 		return EnvelopeLimit
 	case Manifest:
 		return MetadataLimit
-	case FileHeader, PDFHeader:
+	case FileHeader, PDFHeader, InputFileHeader:
 		return 16 << 10
 	case File:
 		return SnapshotLimit
 	case PDF:
 		return PDFLimit
+	case InputFile:
+		return 25 << 20
 	default:
 		return -1
 	}
+}
+
+func metadataKind(kind Kind) bool {
+	return kind == Manifest || kind == FileHeader || kind == InputFileHeader
 }
 
 type Encoder struct {
@@ -62,6 +72,7 @@ type Encoder struct {
 	left     int64
 	terminal bool
 	err      error
+	metadata int64
 }
 
 func NewEncoder(out io.Writer, maxStream int64) *Encoder { return &Encoder{out: out, left: maxStream} }
@@ -85,6 +96,9 @@ func (e *Encoder) WriteFrom(kind Kind, size int64, hash [32]byte, src io.Reader)
 	}
 	if size < 0 || bound(kind) < 0 || size > bound(kind) || e.left < headerSize || size > e.left-headerSize {
 		return errors.New("frame or stream limit exceeded")
+	}
+	if metadataKind(kind) && size > MetadataLimit-e.metadata {
+		return errors.New("aggregate metadata limit exceeded")
 	}
 	var header [headerSize]byte
 	copy(header[:4], "LRF1")
@@ -110,6 +124,9 @@ func (e *Encoder) WriteFrom(kind Kind, size int64, hash [32]byte, src io.Reader)
 		return errors.New("source checksum mismatch")
 	}
 	e.left -= headerSize + size
+	if metadataKind(kind) {
+		e.metadata += size
+	}
 	e.terminal = kind == Terminal
 	return nil
 }
@@ -120,6 +137,7 @@ type Decoder struct {
 	terminal bool
 	err      error
 	pending  *Header
+	metadata int64
 }
 
 func NewDecoder(in io.Reader, maxStream int64) *Decoder { return &Decoder{in: in, left: maxStream} }
@@ -159,6 +177,9 @@ func (d *Decoder) Read(expected Kind, consume func(Header, io.Reader) error) (er
 		return errors.New("frame checksum mismatch")
 	}
 	d.left -= headerSize + h.Size
+	if metadataKind(h.Kind) {
+		d.metadata += h.Size
+	}
 	d.terminal = h.Kind == Terminal
 	return nil
 }
@@ -195,6 +216,9 @@ func (d *Decoder) PeekKind() (kind Kind, err error) {
 	if size > uint64(bound(kind)) || d.left < headerSize || size > uint64(d.left-headerSize) {
 		return 0, errors.New("frame or stream limit exceeded")
 	}
+	if metadataKind(kind) && size > uint64(MetadataLimit-d.metadata) {
+		return 0, errors.New("aggregate metadata limit exceeded")
+	}
 	h := Header{Kind: kind, Size: int64(size)}
 	copy(h.SHA256[:], raw[16:])
 	d.pending = &h
@@ -204,7 +228,7 @@ func (d *Decoder) PeekKind() (kind Kind, err error) {
 // ReadBytes is for bounded metadata. Binary file/PDF frames must use streaming
 // Read to prevent large untrusted allocations in a controller.
 func (d *Decoder) ReadBytes(kind Kind) (out []byte, err error) {
-	if kind == File || kind == PDF {
+	if kind == File || kind == PDF || kind == InputFile {
 		return nil, errors.New("binary frames require streaming Read")
 	}
 	err = d.Read(kind, func(h Header, r io.Reader) error { var e error; out, e = io.ReadAll(r); return e })

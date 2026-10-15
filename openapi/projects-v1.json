@@ -1,0 +1,2423 @@
+{
+  "components": {
+    "schemas": {
+      "APIError": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "type": "array"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "Catalog": {
+        "additionalProperties": false,
+        "properties": {
+          "releases": {
+            "items": {
+              "$ref": "#/components/schemas/Release"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "releases"
+        ],
+        "type": "object"
+      },
+      "CreateReleaseRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "idempotencyKey": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "scope",
+          "revision",
+          "targetId",
+          "version",
+          "idempotencyKey"
+        ],
+        "type": "object"
+      },
+      "CurrentReleaseCheck": {
+        "additionalProperties": false,
+        "properties": {
+          "actor": {
+            "$ref": "#/components/schemas/Principal"
+          },
+          "descriptorDigest": {
+            "type": "string"
+          },
+          "releaseId": {
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          }
+        },
+        "required": [
+          "actor",
+          "scope",
+          "releaseId",
+          "descriptorDigest"
+        ],
+        "type": "object"
+      },
+      "CurrentReleaseDecision": {
+        "additionalProperties": false,
+        "properties": {
+          "allowed": {
+            "type": "boolean"
+          },
+          "publicationVersion": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "allowed",
+          "publicationVersion"
+        ],
+        "type": "object"
+      },
+      "DeleteReleaseRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          }
+        },
+        "required": [
+          "scope",
+          "expectedVersion"
+        ],
+        "type": "object"
+      },
+      "DeleteRevisionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          }
+        },
+        "required": [
+          "scope"
+        ],
+        "type": "object"
+      },
+      "ErrorResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/APIError"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "FieldError": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "pointer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "pointer",
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "FileReference": {
+        "additionalProperties": false,
+        "properties": {
+          "filename": {
+            "allOf": [
+              {
+                "pattern": "^[^/\\\\:\\u0000-\\u001f\\u007f-\\u009f]+$"
+              },
+              {
+                "not": {
+                  "enum": [
+                    ".",
+                    ".."
+                  ]
+                }
+              },
+              {
+                "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+              },
+              {
+                "anyOf": [
+                  {
+                    "not": {
+                      "pattern": "\\."
+                    }
+                  },
+                  {
+                    "pattern": "\\.[A-Za-z0-9]{1,16}$"
+                  }
+                ]
+              }
+            ],
+            "description": "A nonempty base filename without separators, colon, control characters or surrounding whitespace. If present, its final extension is a dot followed by 1–16 ASCII letters/digits. Core generates the file path from SHA-256 and this exact extension.",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 255
+          },
+          "resourceId": {
+            "allOf": [
+              {
+                "pattern": "^[^\\u0000\\r\\n]+$"
+              },
+              {
+                "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+              }
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          }
+        },
+        "required": [
+          "resourceId",
+          "filename"
+        ],
+        "type": "object"
+      },
+      "InputResource": {
+        "additionalProperties": false,
+        "properties": {
+          "class": {
+            "type": "string"
+          },
+          "file": {
+            "$ref": "#/components/schemas/PreparedFile"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          }
+        },
+        "required": [
+          "file",
+          "scope",
+          "class"
+        ],
+        "type": "object"
+      },
+      "Output": {
+        "additionalProperties": false,
+        "properties": {
+          "format": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "format",
+          "path"
+        ],
+        "type": "object"
+      },
+      "PreparedFile": {
+        "additionalProperties": false,
+        "properties": {
+          "filename": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "pointer": {
+            "type": "string"
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "pointer",
+          "resourceId",
+          "filename",
+          "sha256",
+          "sizeBytes",
+          "path"
+        ],
+        "type": "object"
+      },
+      "PreparedInput": {
+        "additionalProperties": false,
+        "properties": {
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/PreparedFile"
+            },
+            "type": "array"
+          },
+          "inputs": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "json": {
+            "type": "object",
+            "x-max-bytes": 1048576
+          }
+        },
+        "required": [
+          "json",
+          "files",
+          "inputs"
+        ],
+        "type": "object"
+      },
+      "Principal": {
+        "additionalProperties": false,
+        "properties": {
+          "domain": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject",
+          "domain"
+        ],
+        "type": "object"
+      },
+      "Profile": {
+        "additionalProperties": false,
+        "properties": {
+          "inputs": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "pdfStandard": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "PublicationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expectedVersion": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          }
+        },
+        "required": [
+          "scope",
+          "expectedVersion",
+          "published"
+        ],
+        "type": "object"
+      },
+      "RegisterRevisionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "idempotencyKey": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          },
+          "snapshotId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "scope",
+          "revision",
+          "snapshotId",
+          "idempotencyKey"
+        ],
+        "type": "object"
+      },
+      "Release": {
+        "additionalProperties": false,
+        "properties": {
+          "contentId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "descriptorDigest": {
+            "type": "string"
+          },
+          "publicationVersion": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "releaseId": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          },
+          "snapshotId": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "releaseId",
+          "scope",
+          "revision",
+          "targetId",
+          "version",
+          "snapshotId",
+          "contentId",
+          "descriptorDigest",
+          "state",
+          "published",
+          "publicationVersion",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "ReleaseForm": {
+        "additionalProperties": false,
+        "properties": {
+          "apiExample": {
+            "$ref": "#/components/schemas/RenderSelectionRequest"
+          },
+          "defaultProfile": {
+            "type": "string"
+          },
+          "defaultsPolicy": {
+            "type": "string"
+          },
+          "descriptorDigest": {
+            "type": "string"
+          },
+          "profiles": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Profile"
+            },
+            "type": "object"
+          },
+          "releaseId": {
+            "type": "string"
+          },
+          "schema": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "schemaResources": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "object"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "releaseId",
+          "descriptorDigest",
+          "schema",
+          "schemaResources",
+          "defaultsPolicy",
+          "profiles",
+          "defaultProfile",
+          "apiExample"
+        ],
+        "type": "object"
+      },
+      "RenderSelectionRequest": {
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "snapshotId"
+                  ]
+                },
+                {
+                  "required": [
+                    "targetId"
+                  ]
+                }
+              ]
+            },
+            "required": [
+              "releaseId"
+            ]
+          },
+          {
+            "not": {
+              "required": [
+                "releaseId"
+              ]
+            },
+            "required": [
+              "snapshotId",
+              "targetId"
+            ]
+          }
+        ],
+        "properties": {
+          "cachePolicy": {
+            "default": "use",
+            "enum": [
+              "use",
+              "refresh"
+            ],
+            "type": "string"
+          },
+          "fileRefs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/FileReference"
+            },
+            "default": {},
+            "maxProperties": 64,
+            "propertyNames": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "pattern": "^/([^~]|~[01])*$",
+              "type": "string",
+              "x-max-utf8-bytes": 4096
+            },
+            "type": "object"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "default": {},
+            "type": "object"
+          },
+          "profile": {
+            "allOf": [
+              {
+                "pattern": "^[^\\u0000\\r\\n]+$"
+              },
+              {
+                "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+              }
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "releaseId": {
+            "allOf": [
+              {
+                "pattern": "^[^\\u0000\\r\\n]+$"
+              },
+              {
+                "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+              }
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          },
+          "snapshotId": {
+            "allOf": [
+              {
+                "pattern": "^[^\\u0000\\r\\n]+$"
+              },
+              {
+                "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+              }
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "targetId": {
+            "allOf": [
+              {
+                "pattern": "^[^\\u0000\\r\\n]+$"
+              },
+              {
+                "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+              }
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          }
+        },
+        "required": [
+          "scope"
+        ],
+        "type": "object"
+      },
+      "ResolveRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "actor": {
+            "$ref": "#/components/schemas/Principal"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/RenderSelectionRequest"
+          },
+          "selectionFingerprint": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "actor",
+          "selection",
+          "selectionFingerprint"
+        ],
+        "type": "object"
+      },
+      "ResolvedExecution": {
+        "additionalProperties": false,
+        "properties": {
+          "actor": {
+            "$ref": "#/components/schemas/Principal"
+          },
+          "contentId": {
+            "type": "string"
+          },
+          "descriptor": {
+            "$ref": "#/components/schemas/TargetDescriptor"
+          },
+          "inputResources": {
+            "items": {
+              "$ref": "#/components/schemas/InputResource"
+            },
+            "type": "array"
+          },
+          "prepared": {
+            "$ref": "#/components/schemas/PreparedInput"
+          },
+          "releaseId": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          },
+          "selectionFingerprint": {
+            "type": "string"
+          },
+          "snapshotId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "actor",
+          "selectionFingerprint",
+          "scope",
+          "revision",
+          "snapshotId",
+          "contentId",
+          "descriptor",
+          "prepared",
+          "inputResources"
+        ],
+        "type": "object"
+      },
+      "ResourceDigest": {
+        "additionalProperties": false,
+        "properties": {
+          "fontIndex": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "size": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "path",
+          "size",
+          "sha256"
+        ],
+        "type": "object"
+      },
+      "Revision": {
+        "additionalProperties": false,
+        "properties": {
+          "contentId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "revision": {
+            "type": "string"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          },
+          "snapshotId": {
+            "type": "string"
+          },
+          "targets": {
+            "items": {
+              "$ref": "#/components/schemas/TargetDescriptor"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "scope",
+          "revision",
+          "snapshotId",
+          "contentId",
+          "targets",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "Scope": {
+        "additionalProperties": false,
+        "properties": {
+          "projectId": {
+            "allOf": [
+              {
+                "pattern": "^[^\\u0000\\r\\n]+$"
+              },
+              {
+                "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+              }
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "workspaceId": {
+            "allOf": [
+              {
+                "pattern": "^[^\\u0000\\r\\n]+$"
+              },
+              {
+                "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+              }
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          }
+        },
+        "required": [
+          "workspaceId",
+          "projectId"
+        ],
+        "type": "object"
+      },
+      "Step": {
+        "additionalProperties": false,
+        "properties": {
+          "dependsOn": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "inputPointer": {
+            "type": "string"
+          },
+          "template": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "template",
+          "inputPointer"
+        ],
+        "type": "object"
+      },
+      "StepDescriptor": {
+        "additionalProperties": false,
+        "properties": {
+          "dependsOn": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "entrypoint": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "inputPointer": {
+            "type": "string"
+          },
+          "templateId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "templateId",
+          "entrypoint",
+          "inputPointer",
+          "dependsOn"
+        ],
+        "type": "object"
+      },
+      "Target": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "inputSchema": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "order": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "output": {
+            "$ref": "#/components/schemas/Output"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            },
+            "type": "array"
+          },
+          "template": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "output"
+        ],
+        "type": "object"
+      },
+      "TargetDescriptor": {
+        "additionalProperties": false,
+        "properties": {
+          "defaultProfile": {
+            "type": "string"
+          },
+          "digest": {
+            "type": "string"
+          },
+          "entrypoint": {
+            "type": "string"
+          },
+          "executionDigest": {
+            "type": "string"
+          },
+          "inputSchema": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "output": {
+            "$ref": "#/components/schemas/Output"
+          },
+          "profiles": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Profile"
+            },
+            "type": "object"
+          },
+          "resolvedProfile": {
+            "$ref": "#/components/schemas/Profile"
+          },
+          "resources": {
+            "items": {
+              "$ref": "#/components/schemas/ResourceDigest"
+            },
+            "type": "array"
+          },
+          "selectedProfile": {
+            "type": "string"
+          },
+          "snapshotContentId": {
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/StepDescriptor"
+            },
+            "type": "array"
+          },
+          "target": {
+            "$ref": "#/components/schemas/Target"
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "templateId": {
+            "type": "string"
+          },
+          "typstVersion": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "targetId",
+          "kind",
+          "inputSchema",
+          "output",
+          "steps",
+          "profiles",
+          "defaultProfile",
+          "selectedProfile",
+          "resolvedProfile",
+          "typstVersion",
+          "snapshotContentId",
+          "resources",
+          "digest",
+          "executionDigest",
+          "target"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "Leafrun Projects API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/internal/v1/checks/release": {
+      "post": {
+        "operationId": "currentRelease",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CurrentReleaseCheck"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentReleaseDecision"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/internal/v1/resolve": {
+      "post": {
+        "description": "Fixed Generation service credential required. Actor is asserted by authenticated server-side Generation code. Verify current caller rights and publication; bind response to actor and selection fingerprint. Prepare defaults/files once through shared Core. Reject bundle execution before Generation admission.",
+        "operationId": "resolveExecution",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResolvedExecution"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/releases": {
+      "get": {
+        "operationId": "catalog",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "workspaceId",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Catalog"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "description": "Persist an immutable technically validated release and durable Storage release-pin acquisition intent. Pending releases become usable only after confirmed activation. No Typst invocation or successful preview is required. Changed inputs under an existing version or idempotency key conflict.",
+        "operationId": "createRelease",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReleaseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Release"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/releases/{releaseId}": {
+      "delete": {
+        "description": "Requires an unpublished release and matching publication version. Tombstone and durably release its Storage reference. Unpublish alone preserves rollback identity and retention.",
+        "operationId": "deleteRelease",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "releaseId",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string",
+              "x-max-utf8-bytes": 256
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteReleaseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "getRelease",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "releaseId",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string",
+              "x-max-utf8-bytes": 256
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Release"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/releases/{releaseId}/form": {
+      "get": {
+        "operationId": "releaseForm",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "releaseId",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string",
+              "x-max-utf8-bytes": 256
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseForm"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/releases/{releaseId}/publication": {
+      "post": {
+        "operationId": "setPublication",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "releaseId",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string",
+              "x-max-utf8-bytes": 256
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Release"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/revisions": {
+      "post": {
+        "operationId": "registerRevision",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRevisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Revision"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/revisions/{revision}": {
+      "delete": {
+        "operationId": "deleteRevision",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string",
+              "x-max-utf8-bytes": 256
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteRevisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "getRevision",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "revision",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string",
+              "x-max-utf8-bytes": 256
+            }
+          },
+          {
+            "in": "query",
+            "name": "workspaceId",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Revision"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    }
+  }
+}

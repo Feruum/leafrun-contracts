@@ -37,6 +37,9 @@ func (c *Client) CreateSnapshot(ctx context.Context, input CreateSnapshotRequest
 func (c *Client) GetSnapshot(ctx context.Context, id string) (Snapshot, error) {
 	return callJSON[Snapshot](c, ctx, "GET", objectPath("snapshots", id), nil)
 }
+func (c *Client) GetResource(ctx context.Context, id string) (Resource, error) {
+	return callJSON[Resource](c, ctx, "GET", objectPath("resources", id), nil)
+}
 func (c *Client) ResourceContent(ctx context.Context, id string) (*http.Response, error) {
 	return c.request(ctx, "GET", objectPath("resources", id)+"/content", nil, "", "")
 }

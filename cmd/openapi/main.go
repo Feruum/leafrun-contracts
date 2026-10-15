@@ -118,6 +118,8 @@ func main() {
 	add("post", "/internal/v1/uploads/{uploadId}/finalize", "finalizeArtifact", reflect.TypeFor[v1.FinalizeArtifactRequest](), reflect.TypeFor[v1.Artifact](), "201", false, false)
 	add("post", "/internal/v1/snapshots", "createSnapshot", reflect.TypeFor[v1.CreateSnapshotRequest](), reflect.TypeFor[v1.Snapshot](), "201", false, false)
 	add("get", "/internal/v1/snapshots/{snapshotId}", "getSnapshot", nil, reflect.TypeFor[v1.Snapshot](), "200", false, false)
+	add("get", "/internal/v1/resources/{resourceId}", "getResource", nil, reflect.TypeFor[v1.Resource](), "200", false, false)
+	paths["/internal/v1/resources/{resourceId}"].(map[string]any)["get"].(map[string]any)["description"] = "Current resource-read permission and committed ready lifecycle are checked. This point-in-time metadata response does not retain the resource; acquire a pin before committing its use."
 	add("get", "/internal/v1/resources/{resourceId}/content", "resourceContent", nil, nil, "200", false, true)
 	add("post", "/internal/v1/pins", "acquirePin", reflect.TypeFor[v1.AcquirePinRequest](), reflect.TypeFor[v1.Pin](), "201", false, false)
 	add("get", "/internal/v1/pins/{pinId}", "getPin", nil, reflect.TypeFor[v1.Pin](), "200", false, false)

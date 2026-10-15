@@ -10,7 +10,7 @@ import (
 func TestOpenAPIMatchesDTOsAndGeneratedArtifact(t *testing.T) {
 	spec := OpenAPI()
 	schemas := spec["components"].(map[string]any)["schemas"].(map[string]any)
-	for _, typ := range []reflect.Type{reflect.TypeFor[CreateJobRequest](), reflect.TypeFor[Job](), reflect.TypeFor[Admission](), reflect.TypeFor[ArtifactBinding]()} {
+	for _, typ := range []reflect.Type{reflect.TypeFor[CreateJobRequest](), reflect.TypeFor[RenderSelectionRequest](), reflect.TypeFor[FileReference](), reflect.TypeFor[Job](), reflect.TypeFor[Admission](), reflect.TypeFor[ArtifactBinding]()} {
 		properties := schemas[typ.Name()].(map[string]any)["properties"].(map[string]any)
 		for i := 0; i < typ.NumField(); i++ {
 			f := typ.Field(i)
@@ -39,6 +39,10 @@ func TestOpenAPIMatchesDTOsAndGeneratedArtifact(t *testing.T) {
 	}
 	paths := spec["paths"].(map[string]any)
 	create := paths["/v1/jobs"].(map[string]any)["post"].(map[string]any)
+	render := paths["/v1/renders"].(map[string]any)["post"].(map[string]any)
+	if render["responses"].(map[string]any)["422"] == nil {
+		t.Fatal("render selection contract omits its pre-admission validation response")
+	}
 	if len(create["parameters"].([]any)) != 1 {
 		t.Fatal("missing required Idempotency-Key")
 	}

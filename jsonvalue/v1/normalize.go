@@ -22,8 +22,16 @@ const MaxDepth = 64
 // tokens must fit int64. Decimal/exponent tokens must be finite binary64 values;
 // conversion is used only for range checking, never to serialize their value.
 func Normalize(input []byte) ([]byte, error) {
-	if len(input) > MaxBytes {
-		return nil, errors.New("JSON exceeds 1 MiB")
+	return NormalizeLimit(input, MaxBytes)
+}
+
+// NormalizeLimit is the canonical codec for bounded server-owned records that
+// contain descriptors as well as parameters. Public parameters continue using
+// Normalize/NormalizeObject and their fixed 1 MiB budget. Numeric rules, strict
+// JSON syntax and nesting limits are identical for every caller.
+func NormalizeLimit(input []byte, maxBytes int64) ([]byte, error) {
+	if maxBytes < 0 || int64(len(input)) > maxBytes {
+		return nil, errors.New("JSON exceeds byte limit")
 	}
 	if !utf8.Valid(input) {
 		return nil, errors.New("JSON contains invalid UTF-8")
@@ -37,8 +45,8 @@ func Normalize(input []byte) ([]byte, error) {
 	if p.pos != len(input) {
 		return nil, p.fail("trailing input")
 	}
-	if len(out) > MaxBytes {
-		return nil, errors.New("normalized JSON exceeds 1 MiB")
+	if int64(len(out)) > maxBytes {
+		return nil, errors.New("normalized JSON exceeds byte limit")
 	}
 	return out, nil
 }

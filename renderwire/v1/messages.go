@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	generationv1 "github.com/leafrun/leafrun-contracts/generation/v1"
+	projectsv1 "github.com/leafrun/leafrun-contracts/projects/v1"
 	storagev1 "github.com/leafrun/leafrun-contracts/storage/v1"
 )
 
@@ -20,6 +21,18 @@ type RenderRequest struct {
 	InputFingerprint     string          `json:"inputFingerprint"`
 	Parameters           json.RawMessage `json:"parameters,omitempty"`
 	ParametersSchemaPath string          `json:"parametersSchemaPath,omitempty"`
+	Execution            *ExecutionInput `json:"execution,omitempty"`
+}
+
+// ExecutionInput contains owner-prepared E05 inputs. The child recomputes the
+// descriptor from the captured source/profile and verifies these digests; it
+// never reapplies defaults. Resource credentials and caller assertions stay in
+// the privileged services. File streams follow the base bundle, before Terminal.
+type ExecutionInput struct {
+	DescriptorDigest string                   `json:"descriptorDigest"`
+	ExecutionDigest  string                   `json:"executionDigest"`
+	Profile          string                   `json:"profile"`
+	Prepared         projectsv1.PreparedInput `json:"prepared"`
 }
 
 type InputTerminal struct {

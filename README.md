@@ -16,6 +16,8 @@ No project license has been selected yet.
 
 Import `github.com/leafrun/leafrun-contracts/storage/v1`. `NewClient(baseURL, bearerToken, httpClient)` returns a typed client for uploads, resources, snapshots, finalize, pins and artifact downloads. Mutation idempotency keys are part of the typed requests. The client does not retry mutations automatically and never follows redirects, including redirects from download endpoints. Close response bodies returned by `ResourceContent` and `ArtifactContent`.
 
+`GetResource` reads authoritative scope, class, size and SHA-256 for a committed ready resource under current permissions. This metadata read is a point-in-time check; it does not retain the object. Acquire and activate its pin before committing a durable use, then verify the frozen descriptor when reading its bytes.
+
 `openapi/storage-v1.json` is OpenAPI 3.1. Regenerate it from the DTO schemas with `go run ./cmd/openapi > openapi/storage-v1.json`; generated output must remain unchanged in verification. Private S3 keys/version IDs and database records are deliberately absent from the wire types. Owner check DTOs describe Access, Generation and pin-holder boundaries.
 
 ### Snapshot identity
@@ -26,11 +28,31 @@ Transport paths use logical `io/fs` naming, without backslashes or NUL bytes. A 
 
 ### Authorization and lifecycle
 
-The E03 server remains an internal dev service. Bearer credentials identify a service principal; arbitrary caller headers do not grant scope. Owner checks must fail closed. An artifact ID is not authorization, and finalize does not prove Generation has committed a publishable job. Every metadata/content request checks access, owner publication, lifecycle and original expiry. PDF TTL is 24 hours from the original finalize; ordinary pins and retries do not extend it.
+The E03 server remains an internal dev service. Bearer credentials identify a service principal; arbitrary caller headers do not grant scope. Owner checks must fail closed. An artifact ID is not authorization, and finalize does not prove Generation has committed a publishable job. Every artifact metadata/content request checks access, owner publication, lifecycle and original expiry. Resource metadata/content requires current resource-read permission and lifecycle checks. PDF TTL is 24 hours from the original finalize; ordinary pins and retries do not extend it.
 
 Pending pins precede the holder's durable pending reference. Activate only after that reference exists; ambiguous replies are resolved by reading the pin. Late activation cannot revive a deleting/expired object. Pin owner decisions distinguish `referenced`, `absent` and `unknown`.
 
 Cleanup uses `ReleasePinBound` with the exact scope, object, holder and retention policy. Storage checks the authenticated holder's current access before returning a matching `released` or `absent` receipt. A missing or different binding returns `absent` without exposing another reference; HTTP errors, including `404`, do not confirm cleanup. The client rejects mismatched receipts. The original DELETE endpoint remains available for existing callers.
+
+## E05 Projects and render selections
+
+`projects/v1` defines revision registration, immutable technically validated
+releases, publication compare-and-set, catalog/forms and fixed-service owner
+resolution. Release creation never requires a successful Typst preview. Only
+confirmed active Storage pins make pending releases usable; unpublishing keeps
+rollback identity, while explicit deletion durably releases the final reference.
+`openapi/projects-v1.json` is generated with `go run ./cmd/projects-openapi`.
+
+`generation/v1.RenderSelectionRequest` selects either `releaseId` or
+`snapshotId + targetId`. `CreateRender` calls `POST /v1/renders` with an
+`Idempotency-Key` header. NormalizeSelection fingerprints the original selection;
+Projects NormalizeExecution separately fingerprints frozen execution data.
+Owner-prepared inputs and authoritative resource digests are never public request
+fields. Parameters keep exact numeric lexemes. Defaults come from shared Core;
+cache policy records intent and PDF reuse belongs to E15. Projects clients enforce
+bounded strict responses, actor/selection/resource bindings and refuse redirects.
+Additive input-file frames and their budgets are documented in
+[`renderwire/v1/PROTOCOL.md`](renderwire/v1/PROTOCOL.md).
 
 ## Development
 

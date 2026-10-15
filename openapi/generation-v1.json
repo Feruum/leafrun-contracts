@@ -7,6 +7,12 @@
           "code": {
             "type": "string"
           },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            },
+            "type": "array"
+          },
           "message": {
             "type": "string"
           }
@@ -229,6 +235,88 @@
         ],
         "type": "object"
       },
+      "FieldError": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "pointer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "pointer",
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "FileReference": {
+        "additionalProperties": false,
+        "properties": {
+          "filename": {
+            "allOf": [
+              {
+                "pattern": "^[^/\\\\:\\u0000-\\u001f\\u007f-\\u009f]+$"
+              },
+              {
+                "not": {
+                  "enum": [
+                    ".",
+                    ".."
+                  ]
+                }
+              },
+              {
+                "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+              },
+              {
+                "anyOf": [
+                  {
+                    "not": {
+                      "pattern": "\\."
+                    }
+                  },
+                  {
+                    "pattern": "\\.[A-Za-z0-9]{1,16}$"
+                  }
+                ]
+              }
+            ],
+            "description": "A nonempty base filename without separators, colon, control characters or surrounding whitespace. If present, its final extension is a dot followed by 1–16 ASCII letters/digits. Core generates the file path from SHA-256 and this exact extension.",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 255
+          },
+          "resourceId": {
+            "allOf": [
+              {
+                "pattern": "^[^\\u0000\\r\\n]+$"
+              },
+              {
+                "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+              }
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          }
+        },
+        "required": [
+          "resourceId",
+          "filename"
+        ],
+        "type": "object"
+      },
       "Job": {
         "additionalProperties": false,
         "properties": {
@@ -347,6 +435,134 @@
           "createdAt",
           "updatedAt",
           "deadline"
+        ],
+        "type": "object"
+      },
+      "RenderSelectionRequest": {
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "snapshotId"
+                  ]
+                },
+                {
+                  "required": [
+                    "targetId"
+                  ]
+                }
+              ]
+            },
+            "required": [
+              "releaseId"
+            ]
+          },
+          {
+            "not": {
+              "required": [
+                "releaseId"
+              ]
+            },
+            "required": [
+              "snapshotId",
+              "targetId"
+            ]
+          }
+        ],
+        "properties": {
+          "cachePolicy": {
+            "default": "use",
+            "enum": [
+              "use",
+              "refresh"
+            ],
+            "type": "string"
+          },
+          "fileRefs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/FileReference"
+            },
+            "default": {},
+            "maxProperties": 64,
+            "propertyNames": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "pattern": "^/([^~]|~[01])*$",
+              "type": "string",
+              "x-max-utf8-bytes": 4096
+            },
+            "type": "object"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "default": {},
+            "type": "object"
+          },
+          "profile": {
+            "allOf": [
+              {
+                "pattern": "^[^\\u0000\\r\\n]+$"
+              },
+              {
+                "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+              }
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "releaseId": {
+            "allOf": [
+              {
+                "pattern": "^[^\\u0000\\r\\n]+$"
+              },
+              {
+                "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+              }
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Scope"
+          },
+          "snapshotId": {
+            "allOf": [
+              {
+                "pattern": "^[^\\u0000\\r\\n]+$"
+              },
+              {
+                "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+              }
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "targetId": {
+            "allOf": [
+              {
+                "pattern": "^[^\\u0000\\r\\n]+$"
+              },
+              {
+                "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+              }
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          }
+        },
+        "required": [
+          "scope"
         ],
         "type": "object"
       },
@@ -757,6 +973,152 @@
               }
             },
             "description": "Generation error; access is checked before disclosure"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Generation error; access is checked before disclosure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Generation error; access is checked before disclosure"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/renders": {
+      "post": {
+        "description": "Resolve an immutable published release or registered working target through Projects. Current access is checked before replay; exact recorded replays do not resolve a newer revision. New admission follows schema/default/file/profile preparation and activation of every input and source pin. Bundle execution is rejected before admission. Cache policy records intent; reuse belongs to E15.",
+        "operationId": "createRender",
+        "parameters": [
+          {
+            "description": "Scoped to workspace and initiator; retained for seven days. Every replay rechecks current credentials and access.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "allOf": [
+                {
+                  "pattern": "^[^\\u0000\\r\\n]+$"
+                },
+                {
+                  "pattern": "^\\S(?:[\\s\\S]*\\S)?$"
+                }
+              ],
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string",
+              "x-max-utf8-bytes": 200
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenderSelectionRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-max-bytes": 1048576
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Admission"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Generation error; access is checked before disclosure"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Generation error; access is checked before disclosure"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Generation error; access is checked before disclosure"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Generation error; access is checked before disclosure"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Generation error; access is checked before disclosure"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Generation error; access is checked before disclosure"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Schema, file or profile validation failed, or the selected target kind is unsupported"
           },
           "429": {
             "content": {

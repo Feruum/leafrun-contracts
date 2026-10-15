@@ -84,7 +84,20 @@ type Admission struct {
 	Job                  Job       `json:"job"`
 	IdempotencyExpiresAt time.Time `json:"idempotencyExpiresAt"`
 }
-type ErrorResponse = storagev1.ErrorResponse
+type FieldError struct {
+	File    string `json:"file,omitempty"`
+	Pointer string `json:"pointer"`
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+type APIError struct {
+	Code    string       `json:"code"`
+	Message string       `json:"message"`
+	Fields  []FieldError `json:"fields,omitempty"`
+}
+type ErrorResponse struct {
+	Error APIError `json:"error"`
+}
 
 // CompletedEvent carries only identifiers/version/state. It intentionally has
 // no field for parameter values, raw diagnostics, source files or PDF data.
