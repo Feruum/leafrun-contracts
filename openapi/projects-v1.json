@@ -23,6 +23,29 @@
         ],
         "type": "object"
       },
+      "AuthorityRef": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "version": {
+            "format": "int64",
+            "maximum": 9223372036854775807,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "version"
+        ],
+        "type": "object"
+      },
       "Catalog": {
         "additionalProperties": false,
         "properties": {
@@ -71,6 +94,16 @@
         "properties": {
           "actor": {
             "$ref": "#/components/schemas/Principal"
+          },
+          "authority": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthorityRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "descriptorDigest": {
             "type": "string"
@@ -655,6 +688,16 @@
           "actor": {
             "$ref": "#/components/schemas/Principal"
           },
+          "authority": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthorityRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "selection": {
             "$ref": "#/components/schemas/RenderSelectionRequest"
           },
@@ -784,6 +827,62 @@
         ],
         "type": "object"
       },
+      "RevisionBinding": {
+        "additionalProperties": false,
+        "properties": {
+          "contentId": {
+            "maxLength": 64,
+            "minLength": 64,
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "revision": {
+            "description": "Exact valid UTF-8 text, 1–256 bytes; no outer whitespace, NUL, CR or LF. No trimming, normalization or UUID parsing.",
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "scope": {
+            "additionalProperties": false,
+            "properties": {
+              "projectId": {
+                "description": "Exact valid UTF-8 text, 1–256 bytes; no outer whitespace, NUL, CR or LF. No trimming, normalization or UUID parsing.",
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string",
+                "x-max-utf8-bytes": 256
+              },
+              "workspaceId": {
+                "description": "Exact valid UTF-8 text, 1–256 bytes; no outer whitespace, NUL, CR or LF. No trimming, normalization or UUID parsing.",
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string",
+                "x-max-utf8-bytes": 256
+              }
+            },
+            "required": [
+              "workspaceId",
+              "projectId"
+            ],
+            "type": "object"
+          },
+          "snapshotId": {
+            "description": "Exact valid UTF-8 text, 1–256 bytes; no outer whitespace, NUL, CR or LF. No trimming, normalization or UUID parsing.",
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          }
+        },
+        "required": [
+          "scope",
+          "revision",
+          "snapshotId",
+          "contentId"
+        ],
+        "type": "object"
+      },
       "Scope": {
         "additionalProperties": false,
         "properties": {
@@ -819,6 +918,47 @@
         "required": [
           "workspaceId",
           "projectId"
+        ],
+        "type": "object"
+      },
+      "ScopeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "revision": {
+            "description": "Exact valid UTF-8 text, 1–256 bytes; no outer whitespace, NUL, CR or LF. No trimming, normalization or UUID parsing.",
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "scope": {
+            "additionalProperties": false,
+            "properties": {
+              "projectId": {
+                "description": "Exact valid UTF-8 text, 1–256 bytes; no outer whitespace, NUL, CR or LF. No trimming, normalization or UUID parsing.",
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string",
+                "x-max-utf8-bytes": 256
+              },
+              "workspaceId": {
+                "description": "Exact valid UTF-8 text, 1–256 bytes; no outer whitespace, NUL, CR or LF. No trimming, normalization or UUID parsing.",
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string",
+                "x-max-utf8-bytes": 256
+              }
+            },
+            "required": [
+              "workspaceId",
+              "projectId"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "scope",
+          "revision"
         ],
         "type": "object"
       },
@@ -1005,6 +1145,23 @@
       "bearer": {
         "scheme": "bearer",
         "type": "http"
+      },
+      "evidenceBearer": {
+        "description": "Dedicated Access legacy scope evidence verifier credential, distinct from all public and ordinary service credentials.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "guestCookie": {
+        "description": "Deployment-configured Access guest cookie.",
+        "in": "cookie",
+        "name": "leafrun_guest_session",
+        "type": "apiKey"
+      },
+      "sessionCookie": {
+        "description": "Deployment-configured human cookie.",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "type": "apiKey"
       }
     }
   },
@@ -1259,6 +1416,131 @@
         ]
       }
     },
+    "/internal/v1/scopes/verify": {
+      "post": {
+        "description": "Dedicated Access owner-evidence credential only. Exact live revision lookup and independent committed Storage snapshot proof; no public user authorization callback, source bytes, or organization ownership assertion.",
+        "operationId": "verifyLegacyScope",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScopeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisionBinding"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Current access is checked before disclosure. Dependency uncertainty fails closed."
+          }
+        },
+        "security": [
+          {
+            "evidenceBearer": []
+          }
+        ],
+        "x-max-request-bytes": 4096,
+        "x-max-response-bytes": 4096
+      }
+    },
     "/v1/releases": {
       "get": {
         "operationId": "catalog",
@@ -1389,8 +1671,15 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
           }
-        ]
+        ],
+        "x-public-credential-selection": "Exactly one bearer/human cookie/guest cookie. Duplicate, malformed, empty, oversized or ambiguous candidates deny before resolution. Unsafe cookie requests require explicit configured Origin."
       },
       "post": {
         "description": "Persist an immutable technically validated release and durable Storage release-pin acquisition intent. Pending releases become usable only after confirmed activation. No Typst invocation or successful preview is required. Changed inputs under an existing version or idempotency key conflict.",
@@ -1510,8 +1799,15 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
           }
-        ]
+        ],
+        "x-public-credential-selection": "Exactly one bearer/human cookie/guest cookie. Duplicate, malformed, empty, oversized or ambiguous candidates deny before resolution. Unsafe cookie requests require explicit configured Origin."
       }
     },
     "/v1/releases/{releaseId}": {
@@ -1639,8 +1935,15 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
           }
-        ]
+        ],
+        "x-public-credential-selection": "Exactly one bearer/human cookie/guest cookie. Duplicate, malformed, empty, oversized or ambiguous candidates deny before resolution. Unsafe cookie requests require explicit configured Origin."
       },
       "get": {
         "operationId": "getRelease",
@@ -1762,8 +2065,15 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
           }
-        ]
+        ],
+        "x-public-credential-selection": "Exactly one bearer/human cookie/guest cookie. Duplicate, malformed, empty, oversized or ambiguous candidates deny before resolution. Unsafe cookie requests require explicit configured Origin."
       }
     },
     "/v1/releases/{releaseId}/form": {
@@ -1887,8 +2197,15 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
           }
-        ]
+        ],
+        "x-public-credential-selection": "Exactly one bearer/human cookie/guest cookie. Duplicate, malformed, empty, oversized or ambiguous candidates deny before resolution. Unsafe cookie requests require explicit configured Origin."
       }
     },
     "/v1/releases/{releaseId}/publication": {
@@ -2022,8 +2339,15 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
           }
-        ]
+        ],
+        "x-public-credential-selection": "Exactly one bearer/human cookie/guest cookie. Duplicate, malformed, empty, oversized or ambiguous candidates deny before resolution. Unsafe cookie requests require explicit configured Origin."
       }
     },
     "/v1/revisions": {
@@ -2144,8 +2468,15 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
           }
-        ]
+        ],
+        "x-public-credential-selection": "Exactly one bearer/human cookie/guest cookie. Duplicate, malformed, empty, oversized or ambiguous candidates deny before resolution. Unsafe cookie requests require explicit configured Origin."
       }
     },
     "/v1/revisions/{revision}": {
@@ -2272,8 +2603,15 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
           }
-        ]
+        ],
+        "x-public-credential-selection": "Exactly one bearer/human cookie/guest cookie. Duplicate, malformed, empty, oversized or ambiguous candidates deny before resolution. Unsafe cookie requests require explicit configured Origin."
       },
       "get": {
         "operationId": "getRevision",
@@ -2415,8 +2753,15 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
           }
-        ]
+        ],
+        "x-public-credential-selection": "Exactly one bearer/human cookie/guest cookie. Duplicate, malformed, empty, oversized or ambiguous candidates deny before resolution. Unsafe cookie requests require explicit configured Origin."
       }
     }
   }

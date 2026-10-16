@@ -1,7 +1,10 @@
 // Package storagev1 defines the versioned Storage wire contract, without database models.
 package storagev1
 
-import "time"
+import (
+	identityv1 "github.com/leafrun/leafrun-contracts/identity/v1"
+	"time"
+)
 
 type Scope struct {
 	WorkspaceID string `json:"workspaceId"`
@@ -170,15 +173,13 @@ type PinReleaseReceipt struct {
 	Binding PinReleaseRequest `json:"binding"`
 	State   PinReleaseState   `json:"state"`
 }
-type Principal struct {
-	Subject string `json:"subject"`
-	Domain  string `json:"domain"`
-}
+type Principal = identityv1.Principal
 type AccessCheck struct {
-	Principal Principal `json:"principal"`
-	Scope     Scope     `json:"scope"`
-	Operation string    `json:"operation"`
-	ObjectID  string    `json:"objectId,omitempty"`
+	Principal Principal                `json:"principal"`
+	Authority *identityv1.AuthorityRef `json:"authority,omitempty"`
+	Scope     Scope                    `json:"scope"`
+	Operation string                   `json:"operation"`
+	ObjectID  string                   `json:"objectId,omitempty"`
 }
 type AccessDecision struct {
 	Allowed bool `json:"allowed"`

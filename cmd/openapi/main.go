@@ -4,6 +4,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	identityv1 "github.com/leafrun/leafrun-contracts/identity/v1"
+	proof "github.com/leafrun/leafrun-contracts/ownerproof/v1"
 	v1 "github.com/leafrun/leafrun-contracts/storage/v1"
 	"os"
 	"reflect"
@@ -37,6 +39,8 @@ func (b *schemaBuilder) schema(t reflect.Type) any {
 		return map[string]any{"type": "boolean"}
 	case reflect.Int, reflect.Int64:
 		return map[string]any{"type": "integer", "format": "int64"}
+	case reflect.Uint64:
+		return map[string]any{"type": "integer", "format": "int64", "minimum": 1, "maximum": identityv1.MaxAuthorityVersion}
 	case reflect.Slice:
 		return map[string]any{"type": "array", "items": b.schema(t.Elem())}
 	case reflect.Struct:
@@ -64,6 +68,11 @@ func (b *schemaBuilder) schema(t reflect.Type) any {
 			if t == reflect.TypeFor[v1.PinReleaseRequest]() || t == reflect.TypeFor[v1.PinReleaseReceipt]() {
 				b.schemas[name].(map[string]any)["additionalProperties"] = false
 			}
+			if t == reflect.TypeFor[identityv1.AuthorityRef]() {
+				b.schemas[name].(map[string]any)["additionalProperties"] = false
+				properties["kind"].(map[string]any)["enum"] = []string{identityv1.KindKratosSession, identityv1.KindBotKey, identityv1.KindGuestSession, identityv1.KindOAuthToken, identityv1.KindService, identityv1.KindDev}
+				properties["id"] = map[string]any{"type": "string", "minLength": 1, "maxLength": identityv1.MaxIdentifierBytes, "x-max-utf8-bytes": identityv1.MaxIdentifierBytes}
+			}
 		}
 		return map[string]any{"$ref": "#/components/schemas/" + name}
 	}
@@ -87,6 +96,10 @@ func main() {
 			responses[status] = map[string]any{"description": "Storage error; expiry is disclosed only after authorization", "content": map[string]any{"application/json": map[string]any{"schema": b.schema(reflect.TypeFor[v1.ErrorResponse]())}}}
 		}
 		op := map[string]any{"operationId": id, "responses": responses, "security": []any{map[string]any{"serviceBearer": []string{}}}}
+		if strings.HasPrefix(path, "/v1/") {
+			op["security"] = []any{map[string]any{"userBearer": []string{}}, map[string]any{"sessionCookie": []string{}}, map[string]any{"guestCookie": []string{}}}
+			op["description"] = "Public current-authority artifact access. Exactly one bearer/human cookie/guest cookie; duplicates, malformed or mixed credentials deny without fallback."
+		}
 		parameters := []any{}
 		for _, part := range strings.Split(path, "/") {
 			if strings.HasPrefix(part, "{") {
@@ -117,6 +130,12 @@ func main() {
 	add("post", "/internal/v1/uploads/{uploadId}/commit", "commitResource", reflect.TypeFor[v1.CommitResourceRequest](), reflect.TypeFor[v1.Resource](), "201", false, false)
 	add("post", "/internal/v1/uploads/{uploadId}/finalize", "finalizeArtifact", reflect.TypeFor[v1.FinalizeArtifactRequest](), reflect.TypeFor[v1.Artifact](), "201", false, false)
 	add("post", "/internal/v1/snapshots", "createSnapshot", reflect.TypeFor[v1.CreateSnapshotRequest](), reflect.TypeFor[v1.Snapshot](), "201", false, false)
+	add("post", "/internal/v1/snapshot-bindings/verify", "verifySnapshotBinding", reflect.TypeFor[proof.SnapshotBinding](), reflect.TypeFor[proof.SnapshotBinding](), "200", false, false)
+	proofOp := paths["/internal/v1/snapshot-bindings/verify"].(map[string]any)["post"].(map[string]any)
+	proofOp["security"] = []any{map[string]any{"evidenceBearer": []string{}}}
+	proofOp["x-max-request-bytes"] = proof.Limit
+	proofOp["x-max-response-bytes"] = proof.Limit
+	proofOp["description"] = "Dedicated Projects owner-evidence credential only. Verify exact committed, ready, unexpired snapshot scope/content binding from catalog facts. No Access callback, source/blob read, pin mutation, or organization ownership assertion."
 	add("get", "/internal/v1/snapshots/{snapshotId}", "getSnapshot", nil, reflect.TypeFor[v1.Snapshot](), "200", false, false)
 	add("get", "/internal/v1/resources/{resourceId}", "getResource", nil, reflect.TypeFor[v1.Resource](), "200", false, false)
 	paths["/internal/v1/resources/{resourceId}"].(map[string]any)["get"].(map[string]any)["description"] = "Current resource-read permission and committed ready lifecycle are checked. This point-in-time metadata response does not retain the resource; acquire a pin before committing its use."
@@ -133,7 +152,13 @@ func main() {
 		b.schema(t)
 	}
 	spec := map[string]any{"openapi": "3.1.0", "info": map[string]any{"title": "Leafrun Storage", "version": "1.0.0", "description": "E03 internal dev API. PDF expires at the original finalize. No presigned download redirects. Owner services remain separate."}, "paths": paths, "components": map[string]any{"schemas": b.schemas, "securitySchemes": map[string]any{"serviceBearer": map[string]any{"type": "http", "scheme": "bearer"}}}}
+	schemes := spec["components"].(map[string]any)["securitySchemes"].(map[string]any)
+	schemes["userBearer"] = map[string]any{"type": "http", "scheme": "bearer"}
+	schemes["sessionCookie"] = map[string]any{"type": "apiKey", "in": "cookie", "name": "ory_kratos_session"}
+	schemes["guestCookie"] = map[string]any{"type": "apiKey", "in": "cookie", "name": "leafrun_guest_session"}
+	proof.AnnotateSchemas(b.schemas)
 	encoder := json.NewEncoder(os.Stdout)
+	spec["components"].(map[string]any)["securitySchemes"].(map[string]any)["evidenceBearer"] = map[string]any{"type": "http", "scheme": "bearer", "description": "Dedicated local Projects snapshot evidence verifier credential, distinct from ordinary service and public credentials."}
 	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(spec); err != nil {
 		fmt.Fprintln(os.Stderr, err)

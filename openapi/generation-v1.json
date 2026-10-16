@@ -350,6 +350,9 @@
             },
             "type": "array"
           },
+          "diagnosticsVisibility": {
+            "type": "string"
+          },
           "engineVersion": {
             "type": "string"
           },
@@ -429,7 +432,6 @@
           "version",
           "sourceSnapshotId",
           "targetId",
-          "entrypoint",
           "engineVersion",
           "inputFingerprint",
           "createdAt",
@@ -609,6 +611,18 @@
       "bearer": {
         "scheme": "bearer",
         "type": "http"
+      },
+      "guestCookie": {
+        "description": "Deployment-configured Access guest cookie.",
+        "in": "cookie",
+        "name": "leafrun_guest_session",
+        "type": "apiKey"
+      },
+      "sessionCookie": {
+        "description": "Deployment-configured human cookie.",
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "type": "apiKey"
       }
     }
   },
@@ -750,8 +764,15 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
           }
-        ]
+        ],
+        "x-public-credential-selection": "Exactly one bearer/human cookie/guest cookie. Duplicate, malformed, empty, oversized or ambiguous candidates deny before resolution. Unsafe cookie requests require explicit configured Origin."
       }
     },
     "/v1/jobs/{jobId}": {
@@ -874,8 +895,15 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
           }
-        ]
+        ],
+        "x-public-credential-selection": "Exactly one bearer/human cookie/guest cookie. Duplicate, malformed, empty, oversized or ambiguous candidates deny before resolution. Unsafe cookie requests require explicit configured Origin."
       }
     },
     "/v1/jobs/{jobId}/cancel": {
@@ -998,8 +1026,15 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
           }
-        ]
+        ],
+        "x-public-credential-selection": "Exactly one bearer/human cookie/guest cookie. Duplicate, malformed, empty, oversized or ambiguous candidates deny before resolution. Unsafe cookie requests require explicit configured Origin."
       }
     },
     "/v1/renders": {
@@ -1144,8 +1179,15 @@
         "security": [
           {
             "bearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
           }
-        ]
+        ],
+        "x-public-credential-selection": "Exactly one bearer/human cookie/guest cookie. Duplicate, malformed, empty, oversized or ambiguous candidates deny before resolution. Unsafe cookie requests require explicit configured Origin."
       }
     }
   }

@@ -30,6 +30,12 @@ func TestClientAdmissionAndJobOperations(t *testing.T) {
 			w.WriteHeader(202)
 			fmt.Fprint(w, `{"job":{"jobId":"j","status":"queued"},"idempotencyExpiresAt":"2026-10-21T00:00:00Z"}`)
 		case "/v1/jobs/j", "/v1/jobs/j/cancel":
+			if r.URL.Path == "/v1/jobs/j/cancel" {
+				body, _ := io.ReadAll(r.Body)
+				if len(body) != 0 {
+					t.Error("bodyless cancellation client sent a body")
+				}
+			}
 			fmt.Fprint(w, `{"jobId":"j","status":"queued"}`)
 		default:
 			t.Errorf("unexpected path: %s", r.URL.Path)

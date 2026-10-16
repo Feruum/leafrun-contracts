@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	httpauth "github.com/leafrun/leafrun-contracts/httpauth/v1"
 	"io"
 	"maps"
 	"net/http"
@@ -23,6 +24,7 @@ import (
 const ResponseLimit int64 = 12 << 20
 
 type Client struct {
+	cookie         *httpauth.Cookie
 	baseURL, token string
 	http           *http.Client
 }
@@ -45,8 +47,24 @@ func NewClient(baseURL, token string, transport *http.Client) (*Client, error) {
 		transport = http.DefaultClient
 	}
 	copy := *transport
+	copy.Jar = nil
 	copy.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
 	return &Client{baseURL: strings.TrimRight(baseURL, "/"), token: token, http: &copy}, nil
+}
+
+// NewCookieClient deliberately sends one configured public cookie and the explicit unsafe-request Origin.
+// Internal service operations are unavailable through this transport.
+func NewCookieClient(baseURL, cookieName, cookieValue, origin string, loopbackHTTP bool, transport *http.Client) (*Client, error) {
+	cookie, err := httpauth.NewCookie(cookieName, cookieValue, origin, loopbackHTTP)
+	if err != nil {
+		return nil, err
+	}
+	c, err := NewClient(baseURL, "", transport)
+	if err != nil {
+		return nil, err
+	}
+	c.cookie = cookie
+	return c, nil
 }
 
 func (c *Client) RegisterRevision(ctx context.Context, in RegisterRevisionRequest) (Revision, error) {
@@ -141,7 +159,13 @@ func (c *Client) call(ctx context.Context, method, path string, in, out any, exp
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", "Bearer "+c.token)
+	if c.cookie != nil {
+		if err := c.cookie.Apply(req); err != nil {
+			return err
+		}
+	} else {
+		req.Header.Set("Authorization", "Bearer "+c.token)
+	}
 	if in != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}

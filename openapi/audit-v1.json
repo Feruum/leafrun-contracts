@@ -1,0 +1,755 @@
+{
+  "components": {
+    "schemas": {
+      "Action": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "enum": [
+              "identity.resolve",
+              "identity.create",
+              "identity.update",
+              "identity.revoke",
+              "hierarchy.register",
+              "organization.create",
+              "organization.update",
+              "organization.delete",
+              "workspace.create",
+              "workspace.update",
+              "workspace.delete",
+              "project.create",
+              "project.update",
+              "project.delete",
+              "membership.add",
+              "membership.update",
+              "membership.remove",
+              "invitation.create",
+              "invitation.accept",
+              "invitation.revoke",
+              "role.assign",
+              "role.revoke",
+              "bot.create",
+              "bot.update",
+              "bot.revoke",
+              "key.create",
+              "key.rotate",
+              "key.revoke",
+              "grant.create",
+              "grant.update",
+              "grant.revoke",
+              "guest.create",
+              "guest.exchange",
+              "guest.revoke",
+              "consent.grant",
+              "consent.revoke",
+              "release.publish",
+              "release.retire",
+              "generation.admission",
+              "generation.terminal",
+              "download.authorized"
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "actor": {
+            "$ref": "#/components/schemas/Principal"
+          },
+          "authority": {
+            "$ref": "#/components/schemas/AuthorityRef"
+          },
+          "operationId": {
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+            "type": "string"
+          },
+          "outcome": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "enum": [
+              "succeeded",
+              "denied",
+              "failed",
+              "admitted",
+              "completed",
+              "cancelled",
+              "rejected"
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "producer": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "enum": [
+              "access",
+              "projects",
+              "generation",
+              "storage"
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "resource": {
+            "$ref": "#/components/schemas/ResourceRef"
+          },
+          "revision": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "schemaVersion": {
+            "const": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "producer",
+          "actor",
+          "authority",
+          "operationId",
+          "action",
+          "resource",
+          "outcome"
+        ],
+        "type": "object"
+      },
+      "AuthorityRef": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "kind": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "enum": [
+              "kratos_session",
+              "bot_key",
+              "guest_session",
+              "oauth_token",
+              "service",
+              "dev"
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "version": {
+            "format": "int64",
+            "maximum": 9223372036854775807,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "version"
+        ],
+        "type": "object"
+      },
+      "HistoryItem": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/Action"
+          },
+          "eventId": {
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+            "type": "string"
+          },
+          "occurredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "scope": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PermissionScope"
+              },
+              {
+                "required": [
+                  "organizationId",
+                  "workspaceId",
+                  "projectId"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "eventId",
+          "scope",
+          "occurredAt",
+          "action"
+        ],
+        "type": "object"
+      },
+      "HistoryPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryItem"
+            },
+            "maxItems": 100,
+            "type": "array"
+          },
+          "nextCursor": {
+            "description": "Opaque encrypted cursor bound to reader, complete scope, filters, limit, descending insertion order and finite expiry. Current authorization is always rechecked.",
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "HistoryQuery": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "enum": [
+              "identity.resolve",
+              "identity.create",
+              "identity.update",
+              "identity.revoke",
+              "hierarchy.register",
+              "organization.create",
+              "organization.update",
+              "organization.delete",
+              "workspace.create",
+              "workspace.update",
+              "workspace.delete",
+              "project.create",
+              "project.update",
+              "project.delete",
+              "membership.add",
+              "membership.update",
+              "membership.remove",
+              "invitation.create",
+              "invitation.accept",
+              "invitation.revoke",
+              "role.assign",
+              "role.revoke",
+              "bot.create",
+              "bot.update",
+              "bot.revoke",
+              "key.create",
+              "key.rotate",
+              "key.revoke",
+              "grant.create",
+              "grant.update",
+              "grant.revoke",
+              "guest.create",
+              "guest.exchange",
+              "guest.revoke",
+              "consent.grant",
+              "consent.revoke",
+              "release.publish",
+              "release.retire",
+              "generation.admission",
+              "generation.terminal",
+              "download.authorized"
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "cursor": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "type": "string"
+          },
+          "limit": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "producer": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "enum": [
+              "access",
+              "projects",
+              "generation",
+              "storage"
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "resourceId": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "scope": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PermissionScope"
+              },
+              {
+                "required": [
+                  "organizationId",
+                  "workspaceId",
+                  "projectId"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "scope",
+          "limit"
+        ],
+        "type": "object"
+      },
+      "PermissionScope": {
+        "additionalProperties": false,
+        "description": "Canonical organization, organization/workspace, organization/workspace/project; legacy exact workspace/project pair permits omitted organization only. Access derives the organization from its unique registered exact pair and compares all supplied hierarchy IDs to its registry.",
+        "oneOf": [
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "workspaceId"
+                  ]
+                },
+                {
+                  "required": [
+                    "projectId"
+                  ]
+                }
+              ]
+            },
+            "required": [
+              "organizationId"
+            ]
+          },
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "projectId"
+                  ]
+                }
+              ]
+            },
+            "required": [
+              "organizationId",
+              "workspaceId"
+            ]
+          },
+          {
+            "required": [
+              "organizationId",
+              "workspaceId",
+              "projectId"
+            ]
+          },
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "organizationId"
+                  ]
+                }
+              ]
+            },
+            "required": [
+              "workspaceId",
+              "projectId"
+            ]
+          }
+        ],
+        "properties": {
+          "organizationId": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "projectId": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "workspaceId": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "Principal": {
+        "additionalProperties": false,
+        "properties": {
+          "domain": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "subject": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          }
+        },
+        "required": [
+          "subject",
+          "domain"
+        ],
+        "type": "object"
+      },
+      "ResourceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "kind": {
+            "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+            "enum": [
+              "identity",
+              "authority",
+              "organization",
+              "workspace",
+              "project",
+              "membership",
+              "invitation",
+              "role",
+              "bot",
+              "key",
+              "grant",
+              "guest",
+              "consent",
+              "release",
+              "job",
+              "artifact",
+              "storage_object"
+            ],
+            "maxLength": 256,
+            "minLength": 1,
+            "not": {
+              "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+            },
+            "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "guestCookie": {
+        "in": "cookie",
+        "name": "leafrun_guest_session",
+        "type": "apiKey"
+      },
+      "sessionCookie": {
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "type": "apiKey"
+      },
+      "userBearer": {
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "Leafrun Audit",
+    "version": "v1"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/audit/actions": {
+      "get": {
+        "description": "Authenticate via Access and require current audit.read on the exact complete scope on every page. Duplicate/unknown query fields rejected. Public callers cannot create audit records.",
+        "operationId": "listAuditActions",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "organizationId",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "workspaceId",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "projectId",
+            "required": true,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "producer",
+            "required": false,
+            "schema": {
+              "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+              "enum": [
+                "access",
+                "projects",
+                "generation",
+                "storage"
+              ],
+              "maxLength": 256,
+              "minLength": 1,
+              "not": {
+                "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+              },
+              "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+              "type": "string",
+              "x-max-utf8-bytes": 256
+            }
+          },
+          {
+            "in": "query",
+            "name": "action",
+            "required": false,
+            "schema": {
+              "description": "Nonempty valid UTF-8 identifier, at most 256 UTF-8 bytes, without leading/trailing Unicode whitespace or any Unicode control characters. maxLength counts Unicode characters; x-max-utf8-bytes states the separate byte limit.",
+              "enum": [
+                "identity.resolve",
+                "identity.create",
+                "identity.update",
+                "identity.revoke",
+                "hierarchy.register",
+                "organization.create",
+                "organization.update",
+                "organization.delete",
+                "workspace.create",
+                "workspace.update",
+                "workspace.delete",
+                "project.create",
+                "project.update",
+                "project.delete",
+                "membership.add",
+                "membership.update",
+                "membership.remove",
+                "invitation.create",
+                "invitation.accept",
+                "invitation.revoke",
+                "role.assign",
+                "role.revoke",
+                "bot.create",
+                "bot.update",
+                "bot.revoke",
+                "key.create",
+                "key.rotate",
+                "key.revoke",
+                "grant.create",
+                "grant.update",
+                "grant.revoke",
+                "guest.create",
+                "guest.exchange",
+                "guest.revoke",
+                "consent.grant",
+                "consent.revoke",
+                "release.publish",
+                "release.retire",
+                "generation.admission",
+                "generation.terminal",
+                "download.authorized"
+              ],
+              "maxLength": 256,
+              "minLength": 1,
+              "not": {
+                "pattern": "[\u0000-\u001f-]|^[    - \u2028\u2029  　]|[    - \u2028\u2029  　]$"
+              },
+              "pattern": "^[^\u0000-\u001f-    - \u2028\u2029  　](?:[^\u0000-\u001f-]*[^\u0000-\u001f-    - \u2028\u2029  　])?$",
+              "type": "string",
+              "x-max-utf8-bytes": 256
+            }
+          },
+          {
+            "in": "query",
+            "name": "resourceId",
+            "required": false,
+            "schema": {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "maxLength": 4096,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryPage"
+                }
+              }
+            },
+            "description": "Exact complete tenant history in descending insertion order; identity-only actions are excluded."
+          },
+          "400": {
+            "description": "Invalid query/cursor, invalid authentication, current permission denied or dependency uncertainty. Fixed safe errors."
+          },
+          "401": {
+            "description": "Invalid query/cursor, invalid authentication, current permission denied or dependency uncertainty. Fixed safe errors."
+          },
+          "403": {
+            "description": "Invalid query/cursor, invalid authentication, current permission denied or dependency uncertainty. Fixed safe errors."
+          },
+          "503": {
+            "description": "Invalid query/cursor, invalid authentication, current permission denied or dependency uncertainty. Fixed safe errors."
+          }
+        },
+        "security": [
+          {
+            "userBearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
+          }
+        ]
+      }
+    }
+  }
+}

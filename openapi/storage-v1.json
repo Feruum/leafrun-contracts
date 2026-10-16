@@ -18,6 +18,16 @@
       },
       "AccessCheck": {
         "properties": {
+          "authority": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthorityRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "objectId": {
             "type": "string"
           },
@@ -155,6 +165,40 @@
           "mediaType",
           "targetId",
           "attemptId"
+        ],
+        "type": "object"
+      },
+      "AuthorityRef": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          },
+          "kind": {
+            "enum": [
+              "kratos_session",
+              "bot_key",
+              "guest_session",
+              "oauth_token",
+              "service",
+              "dev"
+            ],
+            "type": "string"
+          },
+          "version": {
+            "format": "int64",
+            "maximum": 9223372036854775807,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "version"
         ],
         "type": "object"
       },
@@ -575,6 +619,53 @@
         ],
         "type": "object"
       },
+      "SnapshotBinding": {
+        "properties": {
+          "contentId": {
+            "maxLength": 64,
+            "minLength": 64,
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "scope": {
+            "additionalProperties": false,
+            "properties": {
+              "projectId": {
+                "description": "Exact valid UTF-8 text, 1–256 bytes; no outer whitespace, NUL, CR or LF. No trimming, normalization or UUID parsing.",
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string",
+                "x-max-utf8-bytes": 256
+              },
+              "workspaceId": {
+                "description": "Exact valid UTF-8 text, 1–256 bytes; no outer whitespace, NUL, CR or LF. No trimming, normalization or UUID parsing.",
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string",
+                "x-max-utf8-bytes": 256
+              }
+            },
+            "required": [
+              "workspaceId",
+              "projectId"
+            ],
+            "type": "object"
+          },
+          "snapshotId": {
+            "description": "Exact valid UTF-8 text, 1–256 bytes; no outer whitespace, NUL, CR or LF. No trimming, normalization or UUID parsing.",
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string",
+            "x-max-utf8-bytes": 256
+          }
+        },
+        "required": [
+          "scope",
+          "snapshotId",
+          "contentId"
+        ],
+        "type": "object"
+      },
       "SnapshotFile": {
         "properties": {
           "path": {
@@ -758,7 +849,26 @@
       }
     },
     "securitySchemes": {
+      "evidenceBearer": {
+        "description": "Dedicated local Projects snapshot evidence verifier credential, distinct from ordinary service and public credentials.",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "guestCookie": {
+        "in": "cookie",
+        "name": "leafrun_guest_session",
+        "type": "apiKey"
+      },
       "serviceBearer": {
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "sessionCookie": {
+        "in": "cookie",
+        "name": "ory_kratos_session",
+        "type": "apiKey"
+      },
+      "userBearer": {
         "scheme": "bearer",
         "type": "http"
       }
@@ -1563,6 +1673,121 @@
             "serviceBearer": []
           }
         ]
+      }
+    },
+    "/internal/v1/snapshot-bindings/verify": {
+      "post": {
+        "description": "Dedicated Projects owner-evidence credential only. Verify exact committed, ready, unexpired snapshot scope/content binding from catalog facts. No Access callback, source/blob read, pin mutation, or organization ownership assertion.",
+        "operationId": "verifySnapshotBinding",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SnapshotBinding"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotBinding"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Storage error; expiry is disclosed only after authorization"
+          }
+        },
+        "security": [
+          {
+            "evidenceBearer": []
+          }
+        ],
+        "x-max-request-bytes": 4096,
+        "x-max-response-bytes": 4096
       }
     },
     "/internal/v1/snapshots": {
@@ -2512,6 +2737,7 @@
     },
     "/v1/artifacts/{artifactId}": {
       "get": {
+        "description": "Public current-authority artifact access. Exactly one bearer/human cookie/guest cookie; duplicates, malformed or mixed credentials deny without fallback.",
         "operationId": "getArtifact",
         "parameters": [
           {
@@ -2617,13 +2843,20 @@
         },
         "security": [
           {
-            "serviceBearer": []
+            "userBearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
           }
         ]
       }
     },
     "/v1/artifacts/{artifactId}/content": {
       "get": {
+        "description": "Public current-authority artifact access. Exactly one bearer/human cookie/guest cookie; duplicates, malformed or mixed credentials deny without fallback.",
         "operationId": "artifactContent",
         "parameters": [
           {
@@ -2736,7 +2969,13 @@
         },
         "security": [
           {
-            "serviceBearer": []
+            "userBearer": []
+          },
+          {
+            "sessionCookie": []
+          },
+          {
+            "guestCookie": []
           }
         ]
       }

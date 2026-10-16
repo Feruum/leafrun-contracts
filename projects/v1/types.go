@@ -5,6 +5,7 @@ package projectsv1
 import (
 	"encoding/json"
 	generationv1 "github.com/leafrun/leafrun-contracts/generation/v1"
+	identityv1 "github.com/leafrun/leafrun-contracts/identity/v1"
 	storagev1 "github.com/leafrun/leafrun-contracts/storage/v1"
 	"time"
 )
@@ -157,6 +158,7 @@ type InputResource struct {
 // ResolveRequest is accepted only from the fixed Generation service identity.
 // Actor must be constructed from server-side authentication, never public JSON.
 type ResolveRequest struct {
+	Authority            *identityv1.AuthorityRef            `json:"authority,omitempty"`
 	Actor                Principal                           `json:"actor"`
 	Selection            generationv1.RenderSelectionRequest `json:"selection"`
 	SelectionFingerprint string                              `json:"selectionFingerprint"`
@@ -174,10 +176,11 @@ type ResolvedExecution struct {
 	InputResources       []InputResource  `json:"inputResources"`
 }
 type CurrentReleaseCheck struct {
-	Actor            Principal `json:"actor"`
-	Scope            Scope     `json:"scope"`
-	ReleaseID        string    `json:"releaseId"`
-	DescriptorDigest string    `json:"descriptorDigest"`
+	Authority        *identityv1.AuthorityRef `json:"authority,omitempty"`
+	Actor            Principal                `json:"actor"`
+	Scope            Scope                    `json:"scope"`
+	ReleaseID        string                   `json:"releaseId"`
+	DescriptorDigest string                   `json:"descriptorDigest"`
 }
 type CurrentReleaseDecision struct {
 	Allowed            bool  `json:"allowed"`

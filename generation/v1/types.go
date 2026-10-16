@@ -66,7 +66,7 @@ type Job struct {
 	DerivedSnapshotID string           `json:"derivedSnapshotId,omitempty"`
 	DerivedContentID  string           `json:"derivedContentId,omitempty"`
 	TargetID          string           `json:"targetId"`
-	Entrypoint        string           `json:"entrypoint"`
+	Entrypoint        string           `json:"entrypoint,omitempty"`
 	EngineVersion     string           `json:"engineVersion"`
 	InputFingerprint  string           `json:"inputFingerprint"`
 	CreatedAt         time.Time        `json:"createdAt"`
@@ -79,6 +79,7 @@ type Job struct {
 	Diagnostics    []Diagnostic    `json:"diagnostics,omitempty"`
 	RawDiagnostics string          `json:"rawDiagnostics,omitempty"`
 	Parameters     json.RawMessage `json:"parameters,omitempty"`
+	DiagnosticsVisibility string `json:"diagnosticsVisibility,omitempty"`
 }
 type Admission struct {
 	Job                  Job       `json:"job"`

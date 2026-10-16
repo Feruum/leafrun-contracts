@@ -74,6 +74,10 @@ func OpenAPI() map[string]any {
 			responses["422"] = map[string]any{"description": "Schema, file or profile validation failed, or the selected target kind is unsupported", "content": map[string]any{"application/json": map[string]any{"schema": b.schema(reflect.TypeFor[ErrorResponse]())}}}
 		}
 		op := map[string]any{"operationId": id, "responses": responses, "security": []any{map[string]any{"bearer": []string{}}}}
+		if strings.HasPrefix(path, "/v1/") {
+			op["security"] = []any{map[string]any{"bearer": []string{}}, map[string]any{"sessionCookie": []string{}}, map[string]any{"guestCookie": []string{}}}
+			op["x-public-credential-selection"] = "Exactly one bearer/human cookie/guest cookie. Duplicate, malformed, empty, oversized or ambiguous candidates deny before resolution. Unsafe cookie requests require explicit configured Origin."
+		}
 		var parameters []any
 		if strings.Contains(path, "{jobId}") {
 			parameters = append(parameters, map[string]any{"in": "path", "name": "jobId", "required": true, "schema": identifierSchema(256)})
@@ -140,7 +144,7 @@ func OpenAPI() map[string]any {
 	for _, field := range []string{"entrypoint", "parametersSchemaPath"} {
 		create["properties"].(map[string]any)[field] = map[string]any{"type": "string", "minLength": 1, "maxLength": 4096, "x-max-utf8-bytes": 4096, "description": "Logical io/fs file path, never a native path or URL. UTF-8 byte length is bounded in addition to JSON Schema character length.", "allOf": []any{map[string]any{"pattern": "^[^/\\\\\\u0000][^\\\\\\u0000]*$"}, map[string]any{"not": map[string]any{"pattern": "(^|/)\\.{1,2}(/|$)"}}, map[string]any{"not": map[string]any{"pattern": "//|/$"}}}}
 	}
-	return map[string]any{"openapi": "3.1.0", "info": map[string]any{"title": "Leafrun Generation API", "version": "1.0.0"}, "paths": paths, "components": map[string]any{"schemas": b.schemas, "securitySchemes": map[string]any{"bearer": map[string]any{"type": "http", "scheme": "bearer"}}}}
+	return map[string]any{"openapi": "3.1.0", "info": map[string]any{"title": "Leafrun Generation API", "version": "1.0.0"}, "paths": paths, "components": map[string]any{"schemas": b.schemas, "securitySchemes": map[string]any{"sessionCookie": map[string]any{"type": "apiKey", "in": "cookie", "name": "ory_kratos_session", "description": "Deployment-configured human cookie."}, "guestCookie": map[string]any{"type": "apiKey", "in": "cookie", "name": "leafrun_guest_session", "description": "Deployment-configured Access guest cookie."}, "bearer": map[string]any{"type": "http", "scheme": "bearer"}}}}
 }
 
 func identifierSchema(maxBytes int) map[string]any {

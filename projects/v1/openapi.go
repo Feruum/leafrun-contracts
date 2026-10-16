@@ -3,6 +3,8 @@ package projectsv1
 import (
 	"encoding/json"
 	generationv1 "github.com/leafrun/leafrun-contracts/generation/v1"
+	identityv1 "github.com/leafrun/leafrun-contracts/identity/v1"
+	proof "github.com/leafrun/leafrun-contracts/ownerproof/v1"
 	"reflect"
 	"strings"
 	"time"
@@ -27,6 +29,8 @@ func (b *schemaBuilder) schema(t reflect.Type) any {
 		return map[string]any{"type": "boolean"}
 	case reflect.Int, reflect.Int64:
 		return map[string]any{"type": "integer", "format": "int64"}
+	case reflect.Uint64:
+		return map[string]any{"type": "integer", "format": "int64", "minimum": 1, "maximum": identityv1.MaxAuthorityVersion}
 	case reflect.Slice:
 		return map[string]any{"type": "array", "items": b.schema(t.Elem())}
 	case reflect.Map:
@@ -70,6 +74,10 @@ func OpenAPI() map[string]any {
 			responses[status] = map[string]any{"description": "Current access is checked before disclosure. Dependency uncertainty fails closed.", "content": map[string]any{"application/json": map[string]any{"schema": b.schema(reflect.TypeFor[ErrorResponse]())}}}
 		}
 		op := map[string]any{"operationId": id, "responses": responses, "security": []any{map[string]any{"bearer": []string{}}}}
+		if strings.HasPrefix(path, "/v1/") {
+			op["security"] = []any{map[string]any{"bearer": []string{}}, map[string]any{"sessionCookie": []string{}}, map[string]any{"guestCookie": []string{}}}
+			op["x-public-credential-selection"] = "Exactly one bearer/human cookie/guest cookie. Duplicate, malformed, empty, oversized or ambiguous candidates deny before resolution. Unsafe cookie requests require explicit configured Origin."
+		}
 		var parameters []any
 		for _, part := range strings.Split(path, "/") {
 			if strings.HasPrefix(part, "{") {
@@ -103,6 +111,12 @@ func OpenAPI() map[string]any {
 	add("/v1/releases/{releaseId}/form", "get", "releaseForm", "200", nil, reflect.TypeFor[ReleaseForm]())
 	add("/internal/v1/resolve", "post", "resolveExecution", "200", reflect.TypeFor[ResolveRequest](), reflect.TypeFor[ResolvedExecution]())
 	add("/internal/v1/checks/release", "post", "currentRelease", "200", reflect.TypeFor[CurrentReleaseCheck](), reflect.TypeFor[CurrentReleaseDecision]())
+	add("/internal/v1/scopes/verify", "post", "verifyLegacyScope", "200", reflect.TypeFor[proof.ScopeRequest](), reflect.TypeFor[proof.RevisionBinding]())
+	proofOp := paths["/internal/v1/scopes/verify"].(map[string]any)["post"].(map[string]any)
+	proofOp["security"] = []any{map[string]any{"evidenceBearer": []string{}}}
+	proofOp["x-max-request-bytes"] = proof.Limit
+	proofOp["x-max-response-bytes"] = proof.Limit
+	proofOp["description"] = "Dedicated Access owner-evidence credential only. Exact live revision lookup and independent committed Storage snapshot proof; no public user authorization callback, source bytes, or organization ownership assertion."
 	paths["/v1/releases"].(map[string]any)["post"].(map[string]any)["description"] = "Persist an immutable technically validated release and durable Storage release-pin acquisition intent. Pending releases become usable only after confirmed activation. No Typst invocation or successful preview is required. Changed inputs under an existing version or idempotency key conflict."
 	paths["/internal/v1/resolve"].(map[string]any)["post"].(map[string]any)["description"] = "Fixed Generation service credential required. Actor is asserted by authenticated server-side Generation code. Verify current caller rights and publication; bind response to actor and selection fingerprint. Prepare defaults/files once through shared Core. Reject bundle execution before Generation admission."
 	paths["/v1/releases/{releaseId}"].(map[string]any)["delete"].(map[string]any)["description"] = "Requires an unpublished release and matching publication version. Tombstone and durably release its Storage reference. Unpublish alone preserves rollback identity and retention."
@@ -112,5 +126,8 @@ func OpenAPI() map[string]any {
 		b.schemas[name] = generationSchemas[name]
 	}
 	b.schemas["PreparedInput"].(map[string]any)["properties"].(map[string]any)["json"] = map[string]any{"type": "object", "x-max-bytes": 1 << 20}
-	return map[string]any{"openapi": "3.1.0", "info": map[string]any{"title": "Leafrun Projects API", "version": "1.0.0"}, "paths": paths, "components": map[string]any{"schemas": b.schemas, "securitySchemes": map[string]any{"bearer": map[string]any{"type": "http", "scheme": "bearer"}}}}
+	doc := map[string]any{"openapi": "3.1.0", "info": map[string]any{"title": "Leafrun Projects API", "version": "1.0.0"}, "paths": paths, "components": map[string]any{"schemas": b.schemas, "securitySchemes": map[string]any{"sessionCookie": map[string]any{"type": "apiKey", "in": "cookie", "name": "ory_kratos_session", "description": "Deployment-configured human cookie."}, "guestCookie": map[string]any{"type": "apiKey", "in": "cookie", "name": "leafrun_guest_session", "description": "Deployment-configured Access guest cookie."}, "bearer": map[string]any{"type": "http", "scheme": "bearer"}}}}
+	doc["components"].(map[string]any)["securitySchemes"].(map[string]any)["evidenceBearer"] = map[string]any{"type": "http", "scheme": "bearer", "description": "Dedicated Access legacy scope evidence verifier credential, distinct from all public and ordinary service credentials."}
+	proof.AnnotateSchemas(b.schemas)
+	return doc
 }
